@@ -1,0 +1,34 @@
+# --table-start--
+dataClass=tank.viraj.orm.model.GitHubUser
+tableName=GitHubUser
+# --table-fields-start--
+# --field-start--
+fieldName=gitHubUserId
+id=true
+# --field-end--
+# --field-start--
+fieldName=login
+# --field-end--
+# --field-start--
+fieldName=avatar_url
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=tank.viraj.orm.model.GitHubUserProfile
+tableName=GitHubUserProfile
+# --table-fields-start--
+# --field-start--
+fieldName=login
+id=true
+# --field-end--
+# --field-start--
+fieldName=name
+# --field-end--
+# --field-start--
+fieldName=email
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
