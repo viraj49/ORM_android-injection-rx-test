@@ -4,33 +4,31 @@ package tank.viraj.orm.presenter;
 import java.util.List;
 
 import rx.Observer;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
 import tank.viraj.orm.dataSource.GitHubUserListDataSource;
 import tank.viraj.orm.model.GitHubUser;
 import tank.viraj.orm.ui.fragment.GitHubUserListFragment;
+import tank.viraj.orm.util.RxSchedulerConfiguration;
 
 /**
  * Created by Viraj Tank, 18-06-2016.
  */
 public class GitHubUserPresenter {
-    GitHubUserListFragment view;
+    private GitHubUserListFragment view;
     private GitHubUserListDataSource gitHubUserListDataSource;
-    CompositeSubscription compositeSubscription;
+    private CompositeSubscription compositeSubscription;
+    private RxSchedulerConfiguration rxSchedulerConfiguration;
 
     public GitHubUserPresenter(GitHubUserListDataSource gitHubUserListDataSource) {
         this.gitHubUserListDataSource = gitHubUserListDataSource;
-        this.compositeSubscription = new CompositeSubscription();
+        this.rxSchedulerConfiguration = new RxSchedulerConfiguration();
     }
 
     public void loadGitHubUserList(boolean isForced) {
-        checkCompositeSubscription();
-
         compositeSubscription.add(
                 gitHubUserListDataSource.getGitHubUsers(isForced)
-                        .subscribeOn(Schedulers.computation())
-                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeOn(rxSchedulerConfiguration.getSubscribeOn())
+                        .observeOn(rxSchedulerConfiguration.getObserveOn())
                         .doOnSubscribe(() -> view.startRefreshAnimation())
                         .subscribe(new Observer<List<GitHubUser>>() {
                             @Override
@@ -58,20 +56,15 @@ public class GitHubUserPresenter {
 
     public void bind(GitHubUserListFragment gitHubUserListFragment) {
         this.view = gitHubUserListFragment;
+        this.compositeSubscription = new CompositeSubscription();
     }
 
     public void unBind() {
         if (compositeSubscription != null && !compositeSubscription.isUnsubscribed()) {
-            view.stopRefreshAnimation();
             compositeSubscription.unsubscribe();
         }
 
+        view.stopRefreshAnimation();
         this.view = null;
-    }
-
-    private void checkCompositeSubscription() {
-        if (compositeSubscription == null || compositeSubscription.isUnsubscribed()) {
-            compositeSubscription = new CompositeSubscription();
-        }
     }
 }

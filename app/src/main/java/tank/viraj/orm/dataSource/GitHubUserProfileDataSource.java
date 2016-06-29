@@ -7,6 +7,7 @@ import rx.schedulers.Schedulers;
 import tank.viraj.orm.dao.GitHubUserProfileDao;
 import tank.viraj.orm.model.GitHubUserProfile;
 import tank.viraj.orm.retrofit.GitHubApiInterface;
+import tank.viraj.orm.util.RxSchedulerConfiguration;
 
 /**
  * Created by Viraj Tank, 18-06-2016.
@@ -14,11 +15,14 @@ import tank.viraj.orm.retrofit.GitHubApiInterface;
 public class GitHubUserProfileDataSource {
     private GitHubApiInterface gitHubApiInterface;
     private GitHubUserProfileDao gitHubUserProfileDao;
+    private RxSchedulerConfiguration rxSchedulerConfiguration;
 
     public GitHubUserProfileDataSource(GitHubApiInterface gitHubApiInterface,
                                        GitHubUserProfileDao gitHubUserProfileDao) {
         this.gitHubApiInterface = gitHubApiInterface;
         this.gitHubUserProfileDao = gitHubUserProfileDao;
+        this.rxSchedulerConfiguration = new RxSchedulerConfiguration(Schedulers.computation(),
+                Schedulers.computation());
     }
 
     public Observable<GitHubUserProfile> getGitHubUserProfile(String login, boolean isForced) {
@@ -32,8 +36,8 @@ public class GitHubUserProfileDataSource {
                                                                       boolean isForced) {
         return Observable.just(isForced)
                 .filter(isForcedIn -> !isForcedIn)
-                .subscribeOn(Schedulers.immediate())
-                .observeOn(Schedulers.immediate())
+                .subscribeOn(rxSchedulerConfiguration.getSubscribeOn())
+                .observeOn(rxSchedulerConfiguration.getObserveOn())
                 .map(isForcedIn -> {
                     try {
                         GitHubUserProfile gitHubUserProfile = gitHubUserProfileDao.getProfile(login);
